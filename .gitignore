@@ -1,0 +1,11 @@
+*.py[co]
+
+!models/.gitkeep
+models/**/*
+mecab/
+# src/g2pK
+# src/TTS
+*.spec
+*.exe
+build/
+dist/

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나레이션 양반 TTS</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+    <link rel="stylesheet" href="/static/mvp.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <header class="page-header">
+        <nav>
+            <a href="/">나레이션 양반 TTS</a>
+            <ul>
+                <li><a href="/tts-server/text-inference">텍스트 읽기</a></li>
+                <li><a href="/tts-server/cc-overlay">Open Captions Overlay 연동</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <header>
+                <h1>Open Captions Overlay 연동</h1>
+                <p><a href="https://cc-overlay.update.sh/recognition">Open Captions Overlay</a> 페이지에서 마이크로 인식된 문장을 다시 음성
+                    합성되어 재생합니다.<br>Open Captions Overlay 페이지 상단에 표시되는 오버레이 주소 끝
+                    숫자를 트위치 채널코드에 입력한 후 시작 버튼을 클릭하세요.</p>
+
+            </header>
+        </section>
+        <section class="form">
+            <div class="form-group">
+                <label>트위치 채널코드: </label>
+                <input type="text" id="channel">
+            </div>
+            <div class="form-group">
+                <label>볼륨: </label>
+                <input type="range" id="volume" name="volume" min="0" max="10" value="5">
+            </div>
+            <div class="form-group">
+                <button id="start" class="button-small">시작</button>
+            </div>
+        </section>
+        <section>
+            <div id="result"></div>
+        </section>
+    </main>
+    <script>
+        const channelDOM = document.getElementById('channel');
+        const startDOM = document.getElementById('start');
+        const resultDOM = document.getElementById('result');
+        const volumeDOM = document.getElementById('volume');
+
+        var audio = null;
+        var audio_next = null;
+        var voice_queue = [];
+
+        var socket = null;
+        var last_final_str = "";
+
+        function play_voice() {
+            if (audio_next != null) {
+                audio = audio_next;
+                audio_next = null;
+                audio.addEventListener('ended', play_voice);
+                amplifyMedia(audio, volumeDOM.value / 5.0);
+                audio.play();
+            }
+            if (voice_queue.length == 0) {
+                audio = null;
+                return;
+            }
+            const text = voice_queue[0];
+            voice_queue.shift();
+
+            audio_next = new Audio('/tts-server/api/infer-glowtts?text=' + encodeURI(text));
+            audio_next.type = 'audio/wav';
+            audio_next.load();
+            resultDOM.innerHTML = "<p>" + text + "</p>";
+            if (audio == null) {
+                play_voice();
+            }
+        }
+
+        function clear_voice() {
+            voice_queue = [];
+            if (audio != null) {
+                audio.removeEventListener('ended', play_voice);
+                audio.pause();
+                audio = null;
+                audio_next = null;
+            }
+        }
+
+        function amplifyMedia(audio, multiplier) {
+            var context = new (window.AudioContext || window.webkitAudioContext);
+            var result = {
+                context: context,
+                source: context.createMediaElementSource(audio),
+                gain: context.createGain(),
+                amplify: function (multiplier) { result.gain.gain.value = multiplier; },
+                getAmpLevel: function () { return result.gain.gain.value; }
+            };
+            result.source.connect(result.gain);
+            result.gain.connect(context.destination);
+            result.amplify(multiplier);
+            return result;
+        }
+
+        function listenSocket() {
+            const channel_id = channelDOM.value.trim()
+            if (channel_id.length == 0) {
+                updateCaption("⚠️ 채널 정보를 받아올 수 없습니다", "");
+                return;
+            }
+
+            window.location.hash = channel_id;
+
+            socket = io("https://cc-overlay.update.sh/overlay/" + channel_id, {
+                transports: ['websocket']
+            });
+            socket.on('reconnect_attempt', function () {
+                socket.io.opts.transports = ['polling', 'websocket'];
+            });
+            socket.on('json', function (data) {
+                updateCaption(data.final_str, data.interim);
+            });
+        }
+
+
+        function updateCaption(final_str, interim) {
+            if (final_str != '' && last_final_str != final_str) {
+                updateFinalStr(final_str);
+            }
+        }
+
+        function updateFinalStr(final_str) {
+            last_final_str = final_str;
+            if (voice_queue.length == 0) {
+                voice_queue = [final_str];
+                play_voice();
+            } else {
+                voice_queue.push(final_str);
+            }
+        }
+
+        startDOM.onclick = listenSocket;
+        channelDOM.value = window.location.hash.slice(1);
+    </script>
+</body>
+
+</html>
