@@ -1,6 +1,6 @@
 [submodule "src/g2pK"]
 	path = src/g2pK
-	url = https://github.com/sce-tts/g2pK.git
+	url = https://github.com/YainsidaeSpeechSynthesis/g2pK
 [submodule "src/TTS"]
 	path = src/TTS
-	url = https://github.com/sce-tts/TTS.git
+	url = https://github.com/YainsidaeSpeechSynthesis/TTS
