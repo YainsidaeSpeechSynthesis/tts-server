@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나레이션 양반 TTS</title>
+    <title>야인 TTS</title>
     <link rel="stylesheet" href="/static/mvp.css">
     <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -12,10 +12,13 @@
 <body>
     <header class="page-header">
         <nav>
-            <a href="/">나레이션 양반 TTS</a>
+            <ul>
+                <li><a href="/">야인 TTS</a></li>
+                <li><select id="model-select"></select></li>
+            </ul>
             <ul>
                 <li><a href="/tts-server/text-inference">텍스트 읽기</a></li>
-                <!-- <li><a href="/tts-server/cc-overlay">Open Captions Overlay 연동</a></li> -->
+                <li><a href="/tts-server/cc-overlay">Open Captions Overlay 연동</a></li>
             </ul>
         </nav>
     </header>
@@ -62,11 +65,26 @@
         const downloadDOM = document.getElementById('download');
         const downloadAreaDOM = document.getElementById('download_a');
         const enterDOM = document.querySelector('input[name="enter"]');
+        const modelSelectDOM = document.getElementById('model-select');
 
         var audio = null;
         var audio_next = null;
         var voice_queue = [];
 
+        window.onload = ()=>{
+            fetch('/api/models')
+            .then(res => res.json())
+            .then(json => {
+                json.models.forEach(model => {
+                    let option = document.createElement('option');
+                    option.value = model;
+                    option.innerText = model;
+                    modelSelectDOM.appendChild(option);
+                });
+                modelSelectDOM.value = json.selected;
+            });
+        };
+        
         function play_voice() {
             if (audio_next != null) {
                 audio = audio_next;
@@ -82,8 +100,8 @@
             }
             const text = voice_queue[0];
             voice_queue.shift();
-
-            audio_next = new Audio('/tts-server/api/infer-glowtts?text=' + encodeURI(text));
+            
+            audio_next = new Audio('/tts-server/api/infer-glowtts?time=' + Date.now() + '&text=' + encodeURI(text));
             audio_next.type = 'audio/wav';
             audio_next.load();
             if (audio == null) {
@@ -157,6 +175,25 @@
             }
         };
         downloadDOM.onclick = download_audio;
+        modelSelectDOM.onchange = function () {
+            //post fetch
+            fetch('/api/models', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: modelSelectDOM.value
+                })
+            })
+                .then(function (response) {
+                    return response.text();
+                })
+                .then(function (json) {
+                    console.log(json);
+                });
+        };
     </script>
 </body>
 

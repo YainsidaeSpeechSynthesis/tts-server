@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나레이션 양반 TTS</title>
+    <title>야인 TTS</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
     <link rel="stylesheet" href="/static/mvp.css">
     <link rel="stylesheet" href="/static/style.css">
@@ -13,7 +13,10 @@
 <body>
     <header class="page-header">
         <nav>
-            <a href="/">나레이션 양반 TTS</a>
+            <ul>
+                <li><a href="/">야인 TTS</a></li>
+                <li><select id="model-select"></select></li>
+            </ul>
             <ul>
                 <li><a href="/tts-server/text-inference">텍스트 읽기</a></li>
                 <li><a href="/tts-server/cc-overlay">Open Captions Overlay 연동</a></li>
@@ -52,6 +55,7 @@
         const startDOM = document.getElementById('start');
         const resultDOM = document.getElementById('result');
         const volumeDOM = document.getElementById('volume');
+        const modelSelectDOM = document.getElementById('model-select');
 
         var audio = null;
         var audio_next = null;
@@ -59,6 +63,20 @@
 
         var socket = null;
         var last_final_str = "";
+
+        window.onload = ()=>{
+            fetch('/api/models')
+            .then(res => res.json())
+            .then(json => {
+                json.models.forEach(model => {
+                    let option = document.createElement('option');
+                    option.value = model;
+                    option.innerText = model;
+                    modelSelectDOM.appendChild(option);
+                });
+                modelSelectDOM.value = json.selected;
+            });
+        };
 
         function play_voice() {
             if (audio_next != null) {
@@ -148,6 +166,26 @@
 
         startDOM.onclick = listenSocket;
         channelDOM.value = window.location.hash.slice(1);
+        modelSelectDOM.onchange = function () {
+            //post fetch
+            fetch('/api/models', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: modelSelectDOM.value
+                })
+            })
+                .then(function (response) {
+                    return response.text();
+                })
+                .then(function (json) {
+                    console.log(json);
+                });
+        };
+        
     </script>
 </body>
 

@@ -1,5 +1,6 @@
 import os
 import requests
+import json
 from flask import (
     Flask,
     request,
@@ -13,6 +14,10 @@ from flask import (
 
 from synthesys import synthesize
 from text_processer import normalize_text, normalize_multiline_text
+
+import webbrowser
+
+DIR = "C:/YainTTS/models"
 
 app = Flask(__name__)
 
@@ -56,12 +61,46 @@ def infer_glowtts():
 
     try:
         wav = synthesize(text)
-        return send_file(wav, mimetype="audio/wav", attachment_filename="audio.wav")
+        return send_file(wav, mimetype="audio/wav", download_name="audio.wav")
 
     except Exception as e:
         return f"Cannot generate audio: {str(e)}", 500
 
+@app.route("/api/models")
+def get_models():
+    models_res = []
+    models = next(os.walk(DIR))[1]
+    for i in range(len(models)):
+        with open(os.path.join(DIR,models[i],"conf.json"), "r", encoding="utf8") as f:
+            out = json.loads(f.read())
+            models_res.append(out.get("name"))
+    # if env set
+    if "TTS_MODEL_FILE" in os.environ:
+        with open(os.path.join(DIR,os.environ.get("TTS_MODEL_FILE").split('/')[-3],"conf.json"), "r", encoding="utf8") as f:
+            out = json.loads(f.read())
+            current = (out.get("name"))
+    else:
+        current = models_res[0]
+    return json.dumps({"models":models_res,"selected":current}), 200
 
+#post
+@app.route("/api/models", methods=["POST"])
+def post_models():
+    name = request.json.get("model", "")
+    if not name:
+        return "name shouldn't be empty", 400
+    models = next(os.walk(DIR))[1]
+    for i in range(len(models)):
+        with open(os.path.join(DIR,models[i],"conf.json"), "r", encoding="utf8") as f:
+            out = json.loads(f.read())
+            if out.get("name") == name:
+                os.environ['TTS_MODEL_FILE']="/".join([DIR,models[i],'glowtts-v2/best_model.pth.tar'])
+                os.environ['TTS_MODEL_CONFIG']="/".join([DIR,models[i],'glowtts-v2/config.json'])
+                os.environ['VOCODER_MODEL_FILE']="/".join([DIR,models[i],'hifigan-v2/best_model.pth.tar'])
+                os.environ['VOCODER_MODEL_CONFIG']="/".join([DIR,models[i],'hifigan-v2/config.json'])
+                return "success", 200
+    return "model not found", 404
+    
 @app.route("/favicon.ico")
 def favicon():
     return "I don't have favicon :p", 404
@@ -113,4 +152,5 @@ def twip_proxy(path):
 
 
 if __name__ == "__main__":
+    webbrowser.open("http://localhost:5000/")
     app.run(host="0.0.0.0", debug=os.environ.get("TTS_DEBUG", "0") == "1")
