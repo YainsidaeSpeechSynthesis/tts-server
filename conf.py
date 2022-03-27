@@ -29,6 +29,11 @@ b = [
                 "version": "1.0.0-beta.1",
                 "description": "나레이션 양반의 첫 버전",
                 "download_url": "https://github.com/YainsidaeSpeechSynthesis/Narration-Yangban/releases/download/1.0.0-beta.1/na-1.0.0-beta.1.zip"
+            },
+            {
+                "version": "1.0.0-beta.2",
+                "description": "",
+                "download_url": "https://github.com/YainsidaeSpeechSynthesis/Narration-Yangban/releases/download/1.0.0-beta.2/na-1.0.0-beta.2.zip"
             }
         ],
         "repository": "https://github.com/YainsidaeSpeechSynthesis/Narration-Yangban"

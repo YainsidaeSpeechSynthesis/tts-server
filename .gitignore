@@ -9,3 +9,6 @@ mecab/
 *.exe
 build/
 dist/
+tts-server.zip
+Output/
+__pycache__/

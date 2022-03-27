@@ -23,7 +23,28 @@ def get_my_model_ver(code):
     for filename in next(os.walk(DIR))[1]:
         if code in filename.split("-")[0]:
             return "-".join(filename.split("-")[1:])
-    
+
+def update_model_as_version(code, version):
+    try:
+        data = requests.get(MODEL_STORAGE_SERVER).json()
+    except Exception as e:
+        print("서버 접속 에러")
+        return
+    for i in data:
+        if i.get("code") == code:
+            for j in i.get("versions"):
+                if j.get("version") == version:
+                    delete_old(code)
+                    print(f"버전 {version} 다운로드 중...")
+                    wget.download(j.get("download_url"), out="C:\YainTTS\models\\" + code + "-" + j.get("version") + ".zip")
+                    print()
+                    # unzip file
+                    with ZipFile("C:\YainTTS\models\\" + code + "-" + j.get("version") + ".zip", 'r') as zipObj:
+                        # Extract all the contents of zip file in current directory
+                        zipObj.extractall("C:\YainTTS\models\\" + code + "-" + j.get("version"))
+                    print(f"{i.get('name')} 업데이트 완료")
+                    os.remove("C:\YainTTS\models\\" + code + "-" + j.get("version") + ".zip")
+            
 def update_model(meta, code):
     # make folders of DIR when not exist
     if os.path.isdir(DIR):
@@ -122,6 +143,12 @@ def main():
     args = parser.parse_args()
 
     run_man(args)
+def get_current_models():
+    models = []
+    model_names = next(os.walk(DIR))[1]
+    for i in model_names:
+        models.append({"code":i.split("-")[0], "version": "-".join(i.split("-")[1:])})
+    return models
 
 if __name__ == '__main__':
-    main()
+    print(get_current_models())

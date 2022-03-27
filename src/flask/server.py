@@ -11,6 +11,9 @@ from flask import (
     redirect,
     url_for,
 )
+from zipfile import ZipFile
+import shutil
+import wget
 
 from synthesys import synthesize
 from text_processer import normalize_text, normalize_multiline_text
@@ -18,6 +21,8 @@ from text_processer import normalize_text, normalize_multiline_text
 import webbrowser
 
 DIR = "C:/YainTTS/models"
+MODEL_STORAGE_SERVER = 'https://raw.githubusercontent.com/YainsidaeSpeechSynthesis/model-lists/master/lists.json'
+
 
 app = Flask(__name__)
 
@@ -41,6 +46,10 @@ def text_inference():
 @app.route("/tts-server/cc-overlay")
 def open_captions_overlay():
     return render_template("cc-overlay.html")
+
+@app.route("/tts-server/model-manager")
+def model_manager_overlay():
+    return render_template("model-manager.html")
 
 
 @app.route("/tts-server/api/process-text", methods=["POST"])
@@ -100,6 +109,68 @@ def post_models():
                 os.environ['VOCODER_MODEL_CONFIG']="/".join([DIR,models[i],'hifigan-v2/config.json'])
                 return "success", 200
     return "model not found", 404
+
+def files(path):
+    for file in os.listdir(path):
+        if os.path.isfile(os.path.join(path, file)):
+            yield file
+
+def delete_old(code):
+    for filename in next(os.walk(DIR))[1]:
+        if code in filename.split("-")[0]:
+            shutil.rmtree(os.path.join(DIR, filename))
+
+def get_current_models():
+    models = []
+    model_names = next(os.walk(DIR))[1]
+    for i in model_names:
+        models.append({"code":i.split("-")[0], "version": "-".join(i.split("-")[1:])})
+    return models
+
+def get_model_code(code):
+    for i in next(os.walk(DIR))[1]:
+        if i.split("-")[0] == code:
+            return "-".join(i.split("-")[1:])
+    return None
+
+def update_model(data, code, version):
+    for i in data:
+        if i.get("code") == code:
+            print(f"{i.get('name')} 업데이트 중...")
+            for j in i.get("versions"):
+                if j.get("version") == version:
+                    delete_old(code)
+                    print(f"버전 {version} 다운로드 중...")
+                    wget.download(j.get("download_url"), out="C:\YainTTS\models\\" + code + "-" + j.get("version") + ".zip")
+                    print()
+                    # unzip file
+                    with ZipFile("C:\YainTTS\models\\" + code + "-" + j.get("version") + ".zip", 'r') as zipObj:
+                        # Extract all the contents of zip file in current directory
+                        zipObj.extractall("C:\YainTTS\models\\" + code + "-" + j.get("version"))
+                    print(f"업데이트 완료")
+                    os.remove("C:\YainTTS\models\\" + code + "-" + j.get("version") + ".zip")
+                
+@app.route("/api/update-model", methods=["POST"])
+def update_models():
+    try:
+        data = requests.get(MODEL_STORAGE_SERVER).json()
+    except Exception as e:
+        print("서버 접속 에러")
+        return
+    # code = request.json.get("model_code", "")
+    # version = request.json.get("version", "")
+    # if not code or not version:
+    #     return "code or version shouldn't be empty", 400
+    
+    # get codes of models from DIR
+    models = get_current_models()
+    for i in data:
+        version = request.form.get(i['code'])
+        if version:
+            if get_model_code(i['code']) != version:
+                print(data, i['code'], version)
+                update_model(data, i['code'], version)
+    return "success", 200
     
 @app.route("/favicon.ico")
 def favicon():

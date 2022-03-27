@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>야인 TTS</title>
+    <link rel="stylesheet" href="/static/mvp.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <header class="page-header">
+        <nav>
+            <ul>
+                <li><a href="/">야인 TTS</a></li>
+                <li><select id="model-select"></select></li>
+            </ul>
+            <ul>
+                <li><a href="/tts-server/text-inference">텍스트 읽기</a></li>
+                <li><a href="/tts-server/cc-overlay">Open Captions Overlay 연동</a></li>
+                <li><a href="/tts-server/model-manager">모델 관리자</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <header>
+                <h1>모델 관리자</h1>
+                <p>TTS 모델을 업데이트 & 설치 합니다</p>
+            </header>
+        </section>
+        <form action="/api/update-model" method="POST">
+            <p>나레이션 양반</p>
+            <ul>
+                <li><input name="na" type="radio" value="1.0.0-beta.1" checked="checked"/></li>
+                <li><input name="na" type="radio" value="1.0.0-beta.2" /></li>
+            </ul>
+            <p>염동진</p>
+            <ul>
+                <li><input name="yu" type="radio" value="1.0.0" checked="checked"/></li>
+            </ul>
+            <input type="submit" value="결☆정">
+        </form>
+    </main>
+    <script>
+        const modelSelectDOM = document.getElementById('model-select');
+
+        window.onload = ()=>{
+            fetch('/api/models')
+            .then(res => res.json())
+            .then(json => {
+                json.models.forEach(model => {
+                    let option = document.createElement('option');
+                    option.value = model;
+                    option.innerText = model;
+                    modelSelectDOM.appendChild(option);
+                });
+                modelSelectDOM.value = json.selected;
+            });
+        };
+        modelSelectDOM.onchange = function () {
+            //post fetch
+            fetch('/api/models', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: modelSelectDOM.value
+                })
+            })
+                .then(function (response) {
+                    return response.text();
+                })
+                .then(function (json) {
+                    console.log(json);
+                });
+        };
+    </script>
+</body>
+
+</html>
