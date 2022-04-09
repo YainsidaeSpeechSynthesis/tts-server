@@ -21,6 +21,6 @@ YainTTS 바로가기를 클릭해주세요.
 tenebo@naver.com
 
 ### 제작 참여 ###
-Tenebo https://www.youtube.com/channel/UCklO6KwI6ntEA1nrHkjV3IQ
-SIMLee https://www.youtube.com/channel/UC7BDsvO6wicB7kdtXNtSLEA
+Tenebo https://www.youtube.com/channel/UCklO6KwI6ntEA1nrHkjV3IQ \
+SIMLee https://www.youtube.com/channel/UC7BDsvO6wicB7kdtXNtSLEA \
 나무마릿수 https://www.youtube.com/channel/UCw2mg6rut70SGsYOqUaFvxA
