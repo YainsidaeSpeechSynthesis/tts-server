@@ -9,10 +9,13 @@ Windows x64
 https://drive.google.com/drive/folders/1JkAgT3PgICsKFptI9dGkPXhhu1mUR8ho 에서 최신 모델을 다운로드해주세요.
 압축을 푼뒤
 ```C:\YainTTS\models``` 폴더를 만든뒤
-압축을 푼 모델 폴더를 넣어주세요
+압축을 푼 모델 폴더를 넣어주세요(!주의! 압축을 풀때 압축된 파일이름 폴더 아레 내용이 있게 해주세요)
+
+예시)
+![Capture.JPG](https://raw.githubusercontent.com/YainsidaeSpeechSynthesis/tts-server/master/screenshots/Capture.JPG)
 
 ### 플레이어 설치 ###
-https://github.com/YainsidaeSpeechSynthesis/tts-server/releases 에서 최신 버전의 mysetup.exe이나 YainTTS.exe 다운로드한뒤 실행해서 설치해주세요.
+https://github.com/YainsidaeSpeechSynthesis/tts-server/releases 에서 최신 버전의 YainTTS-Setup.exe이나 YainTTS.exe 다운로드한뒤 실행해서 설치해주세요.
 
 ### 실행 ###
 YainTTS 바로가기를 클릭해주세요.

@@ -3,7 +3,7 @@
 
 #define MyAppName "YainTSS"
 #define MyAppVersion "1.2"
-#define MyAppPublisher "¾ßÀÎ½Ã´ë À½¼ºÇÕ¼º ¿¬±¸È¸"
+#define MyAppPublisher "ï¿½ï¿½ï¿½Î½Ã´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ¼ï¿½ ï¿½ï¿½ï¿½ï¿½È¸"
 #define MyAppURL "https://github.com/YainsidaeSpeechSynthesis/"
 #define MyAppExeName "server.exe"
 #define MyAppAssocName MyAppName + ""
@@ -27,7 +27,7 @@ DisableProgramGroupPage=yes
 LicenseFile=D:\sim\programs\narrator-yangban-tts\LICENSE
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputBaseFilename=mysetup
+OutputBaseFilename=YainTTS-Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
