@@ -12,7 +12,7 @@ https://drive.google.com/drive/folders/1JkAgT3PgICsKFptI9dGkPXhhu1mUR8ho 에서 
 압축을 푼 모델 폴더를 넣어주세요
 
 ### 플레이어 설치 ###
-https://github.com/YainsidaeSpeechSynthesis/tts-server/releases 에서 최신 버전의 mysetup.exe이나 YainTTS.exe 다운로드한뒤 실행해서 설치해주세요.
+https://github.com/YainsidaeSpeechSynthesis/tts-server/releases 에서 최신 버전의 YainTTS-Setup.exe이나 YainTTS.exe 다운로드한뒤 실행해서 설치해주세요.
 
 ### 실행 ###
 YainTTS 바로가기를 클릭해주세요.
